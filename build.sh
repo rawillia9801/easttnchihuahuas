@@ -4,19 +4,14 @@ set -euo pipefail
 rm -rf public .site-build
 mkdir -p public .site-build
 
-# Rebuild the validated base website.
-cat sitepart-* > .site-build/site.b64
+# Rebuild the polished East Tennessee Chihuahuas website from validated chunks.
+cat sitev2-00 sitev2-01 sitev2-02 sitev2-03 sitev2-04 sitev2-05 sitev2-06-restB > .site-build/site.b64
 base64 -d .site-build/site.b64 > .site-build/site.tgz
+
+# Fail the deployment if the website bundle is corrupted or incomplete.
+printf '%s  %s\n' '34225bc5f5f16a9955beaca4caa0173837b688679b56cee9534d4a21f8ab57cd' '.site-build/site.tgz' | sha256sum -c -
+
 tar -xzf .site-build/site.tgz -C public
-
-# Replace the public puppy application with the full 17-section intake form.
-cat appover-* > .site-build/application.b64
-base64 -d .site-build/application.b64 > .site-build/application.html.gz
-mkdir -p public/application
-gzip -dc .site-build/application.html.gz > public/application/index.html
-
-# Fail the deployment if the application bundle is ever corrupted in transit.
-printf '%s  %s\n' 'ca25fe41c39dc9fd3f6299fc4419eb7d9865a5f6864063709c290f095ed1fc69' 'public/application/index.html' | sha256sum -c -
 
 printf 'East Tennessee Chihuahuas site prepared: '
 find public -type f | wc -l
