@@ -16,7 +16,7 @@ mkdir -p public/application
 gzip -dc .site-build/application.html.gz > public/application/index.html
 
 # Fail the deployment if the application bundle is ever corrupted in transit.
-printf '%s  %s\n' 'e37db17157d1b25f5383a55889c66a0b138496074358f68e075b0a4b4e9a1c0f' 'public/application/index.html' | sha256sum -c -
+printf '%s  %s\n' 'ca25fe41c39dc9fd3f6299fc4419eb7d9865a5f6864063709c290f095ed1fc69' 'public/application/index.html' | sha256sum -c -
 
 printf 'East Tennessee Chihuahuas site prepared: '
 find public -type f | wc -l
