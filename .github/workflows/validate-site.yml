@@ -1,0 +1,30 @@
+name: Validate East Tennessee Chihuahuas Site
+
+on:
+  push:
+    branches:
+      - main
+      - final-public-cleanup
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+      - name: Use Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Build and validate site
+        run: bash build.sh
+      - name: Confirm public output
+        run: |
+          test -f public/index.html
+          test -f public/application/index.html
+          test -f public/deposit-agreement/index.html
+          test -f public/bill-of-sale/index.html
+          test -f public/assets/home-puppy.webp
