@@ -10,9 +10,13 @@ base64 -d .site-build/site.b64 > .site-build/site.tgz
 printf '%s  %s\n' '34225bc5f5f16a9955beaca4caa0173837b688679b56cee9534d4a21f8ab57cd' '.site-build/site.tgz' | sha256sum -c -
 tar -xzf .site-build/site.tgz -C public
 
-# Apply the customer-facing audit, real-photo home page, About/Pricing pages,
-# dynamic puppy listings, private /admin, sitemap, and link/content QA.
+# Apply the customer-facing audit, About/Pricing pages, dynamic puppy listings,
+# private /admin, sitemap, and link/content QA.
 node postbuild.mjs
+
+# Apply the final hero-image safeguard so the home page always uses a healthy,
+# professional Chihuahua puppy photo and never shows photo-source/development copy.
+node fix-hero.mjs
 
 printf 'East Tennessee Chihuahuas site prepared: '
 find public -type f | wc -l
