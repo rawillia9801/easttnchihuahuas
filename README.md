@@ -2,18 +2,28 @@
 
 Canonical source repository for the customer-facing website at `easttnchihuahuas.com`.
 
-## Website structure
+## Public website
 
-The site is a true multi-page website using the East Tennessee Chihuahuas Mission Control-inspired design. Customer-facing routes include Home, Available Puppies, Upcoming Litters, Puppy Process, Application, Our Dogs, Our Program, Health & Care, Past Puppies, Transportation, Pup-Lift, FAQ, Contact, and separate policy/document pages.
+The site is a multi-page breeder website with a Mission Control-inspired shell adapted for a customer-facing Chihuahua program. Core public areas include Home, Available Puppies, Upcoming Litters, Puppy Process, Application, Pricing & Deposits, Our Dogs, About, Our Program, Health & Care, Past Puppies, Transportation, FAQ, Contact, and separate policy/document pages.
 
-The policy and document area includes separate pages for the Deposit Agreement, Bill of Sale, One-Year Health Guarantee, Financing & Payment Plan Addendum, Lifetime Return & Rehoming Policy, Transportation Policy, Buyer Responsibilities & Care Agreement, Small Puppy Safety Policy, Breeding Rights Policy, Terms, and Privacy Policy.
+The policy/document area includes the Deposit Agreement, Puppy Sales Agreement & Bill of Sale, One-Year Health Guarantee, Financing & Payment Plan Addendum, Lifetime Return & Rehoming Policy, Transportation Policy, Buyer Responsibilities & Care Agreement, Small Puppy Safety Policy, Breeding Rights Policy, Terms, and Privacy Policy.
+
+`postbuild.mjs` performs the final customer-facing pass after the base site is rebuilt. It keeps the breeder biography/"since 2009" information on the About page, replaces internal/development-style customer copy, uses a real Chihuahua photograph on the home page, builds Pricing and About pages, generates dynamic puppy-listing surfaces, creates the private `/admin/` interface, and performs build-time customer-copy and internal-link validation.
+
+## Puppy admin
+
+`/admin/` is a private breeder interface for creating, editing, publishing, reserving, hiding, and deleting puppy listings. It can also upload puppy photographs. Public puppy cards on Home and Available Puppies read from the same API, so a saved listing can appear immediately without rebuilding the website.
+
+The admin/API expects these server-side environment variables:
+
+- `SUPABASE_URL`
+- `SUPABASE_SERVICE_ROLE_KEY`
+- `ADMIN_TOKEN`
+
+The database/storage setup is in `supabase/schema.sql`. The service-role key must remain server-side and must never be placed in customer-facing JavaScript.
 
 ## Deployment
 
-The validated website is stored as an atomic compressed source bundle split across `sitepart-*` files. `build.sh` reconstructs that bundle into `public/`, and `vercel.json` tells Vercel to deploy that generated directory.
+`build.sh` reconstructs the validated base bundle into `public/`, then runs `postbuild.mjs`. `vercel.json` deploys the generated `public/` directory while Vercel Functions under `api/` provide the puppy listing and photo upload APIs.
 
-This keeps the complete site versioned in GitHub and allows future website changes to be committed here and deployed automatically rather than manually uploading folders to web hosting.
-
-## Source checks
-
-Current packaged site: 25 HTML pages, 30 deployed files, with internal links validated before packaging. Customer-facing content is branded as East Tennessee Chihuahuas and does not use the former Southwest Virginia Chihuahua business identity.
+The build fails if customer-facing QA finds former SWVA branding, internal-placeholder language, `since 2009` outside the About page, or broken internal links.
