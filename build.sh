@@ -13,9 +13,11 @@ tar -xzf .site-build/site.tgz -C public
 # Build the working site, admin tools, and dynamic puppy data hooks.
 node postbuild.mjs
 
-# Retain the existing image safeguard, then apply the final human-facing pass.
+# Apply the final customer-facing design, copy, image, form, and contract passes.
 node fix-hero.mjs
 node final-pass.mjs
+node contracts-pass.mjs
+node final-qa.mjs
 
 printf 'East Tennessee Chihuahuas site prepared: '
 find public -type f | wc -l
