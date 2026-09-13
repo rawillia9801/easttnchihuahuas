@@ -13,10 +13,12 @@ tar -xzf .site-build/site.tgz -C public
 # Build the working site, admin tools, and dynamic puppy data hooks.
 node postbuild.mjs
 
-# Apply the final customer-facing design, copy, image, form, and contract passes.
+# Apply customer-facing design, copy, image, form, contract, policy, and funnel passes.
 node fix-hero.mjs
 node final-pass.mjs
 node contracts-pass.mjs
+node policy-experience.mjs
+node funnel-polish.mjs
 node final-qa.mjs
 
 printf 'East Tennessee Chihuahuas site prepared: '
