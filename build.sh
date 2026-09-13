@@ -19,6 +19,7 @@ node final-pass.mjs
 node contracts-pass.mjs
 node policy-experience.mjs
 node funnel-polish.mjs
+node legal-policy-pass.mjs
 node final-qa.mjs
 
 printf 'East Tennessee Chihuahuas site prepared: '
