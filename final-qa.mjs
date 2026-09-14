@@ -14,8 +14,13 @@ if(!/src="\/assets\/Cheralynnn\.png"/i.test(home))throw new Error('Homepage is n
 if(!/alt="Cheralyn Smith, East Tennessee Chihuahuas breeder"/i.test(home))throw new Error('Homepage Cheralyn photo alt text is missing or incorrect');
 const wizard=fs.readFileSync(path.join(root,'assets','application-wizard.js'),'utf8');
 if(!/application-thank-you/i.test(wizard))throw new Error('Application success redirect is missing');
+const formSubmit=fs.readFileSync(path.join(root,'assets','form-submit.js'),'utf8');
+if(!formSubmit.includes('/api/submit-form'))throw new Error('Direct form API integration is missing');
+if(!formSubmit.includes("type:'application'"))throw new Error('Application direct submission integration is missing');
+const application=fs.readFileSync(path.join(root,'application','index.html'),'utf8');
+if(!application.includes('/assets/form-submit.js'))throw new Error('Application submission script is missing');
 const pricing=fs.readFileSync(path.join(root,'pricing','index.html'),'utf8');
 if(!/\$250[^<]{0,20}\$500|\$250–\$500/i.test(pricing))throw new Error('Pricing page does not show the approved $250–$500 deposit range');
 const submissionDocs=['deposit-agreement','bill-of-sale','health-guarantee','financing-addendum','lifetime-return','transportation-policy','buyer-care-agreement','small-puppy-policy','breeding-rights-policy'];
-for(const rel of submissionDocs){const html=fs.readFileSync(path.join(root,rel,'index.html'),'utf8');if(!html.includes('class="document-email-submit'))throw new Error(`Document submission section missing: ${rel}`);if(!html.includes('mailto:applications@easttnchihuahuas.com'))throw new Error(`General inbox link missing: ${rel}`)}
-console.log(`Final QA passed: ${htmlFiles.length} HTML pages; 0 broken internal links; homepage photo, funnel, and document inbox checks passed.`);
+for(const rel of submissionDocs){const html=fs.readFileSync(path.join(root,rel,'index.html'),'utf8');if(!html.includes('class="document-email-submit'))throw new Error(`Document submission section missing: ${rel}`);if(!html.includes(`data-form-type="${rel}"`))throw new Error(`Direct form type missing: ${rel}`);if(!html.includes('name="customerEmail"'))throw new Error(`Required customer email field missing: ${rel}`);if(!html.includes('/assets/form-submit.js'))throw new Error(`Form submission script missing: ${rel}`);if(html.includes('mailto:applications@easttnchihuahuas.com'))throw new Error(`Legacy mailto submission still present: ${rel}`)}
+console.log(`Final QA passed: ${htmlFiles.length} HTML pages; 0 broken internal links; homepage photo, application, and direct email submission checks passed.`);
