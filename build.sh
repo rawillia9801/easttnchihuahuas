@@ -13,7 +13,7 @@ tar -xzf .site-build/site.tgz -C public
 # Build the working site, admin tools, and dynamic puppy data hooks.
 node postbuild.mjs
 
-# Apply customer-facing design, copy, image, form, contract, policy, funnel, health, homepage-photo, and document-submission passes.
+# Apply customer-facing design, copy, image, form, contract, policy, funnel, health, homepage-photo, and submission passes.
 node fix-hero.mjs
 node final-pass.mjs
 node contracts-pass.mjs
@@ -24,6 +24,7 @@ node availability-upcoming-pass-v2.mjs
 node health-screening-pass.mjs
 node homepage-show-photo-pass.mjs
 node document-email-links-pass.mjs
+node form-email-pass.mjs
 node final-qa.mjs
 
 printf 'East Tennessee Chihuahuas site prepared: '
