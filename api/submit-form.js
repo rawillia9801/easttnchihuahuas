@@ -8,6 +8,7 @@ const SUPPORT_FROM = process.env.SUPPORT_FROM_EMAIL || `East Tennessee Chihuahua
 
 const LABELS = {
   application: 'Puppy Application',
+  'application-inquiry': 'Application Question',
   contact: 'Website Inquiry',
   support: 'Buyer & Family Support Request',
   'deposit-agreement': 'Deposit & Reservation Agreement',
@@ -23,6 +24,7 @@ const LABELS = {
 
 const APPLICATION_TYPES = new Set([
   'application',
+  'application-inquiry',
   'deposit-agreement',
   'bill-of-sale',
   'health-guarantee',
@@ -78,6 +80,14 @@ function confirmationText(type, label, name) {
       subject: 'We received your East Tennessee Chihuahuas application',
       heading: 'Thank you for submitting your application.',
       body: `Hi ${first}, we received your puppy application. It has been delivered to our applications inbox for review. We will follow up using the contact information on your application.`
+    };
+  }
+
+  if (type === 'application-inquiry') {
+    return {
+      subject: 'We received your application question — East Tennessee Chihuahuas',
+      heading: 'Thank you for your application question.',
+      body: `Hi ${first}, your message has been delivered to our applications inbox. We will review your question and follow up with you.`
     };
   }
 
