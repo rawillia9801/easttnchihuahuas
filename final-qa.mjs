@@ -16,4 +16,6 @@ const wizard=fs.readFileSync(path.join(root,'assets','application-wizard.js'),'u
 if(!/application-thank-you/i.test(wizard))throw new Error('Application success redirect is missing');
 const pricing=fs.readFileSync(path.join(root,'pricing','index.html'),'utf8');
 if(!/\$250[^<]{0,20}\$500|\$250–\$500/i.test(pricing))throw new Error('Pricing page does not show the approved $250–$500 deposit range');
-console.log(`Final QA passed: ${htmlFiles.length} HTML pages; 0 broken internal links; homepage photo and funnel checks passed.`);
+const submissionDocs=['deposit-agreement','bill-of-sale','health-guarantee','financing-addendum','lifetime-return','transportation-policy','buyer-care-agreement','small-puppy-policy','breeding-rights-policy'];
+for(const rel of submissionDocs){const html=fs.readFileSync(path.join(root,rel,'index.html'),'utf8');if(!html.includes('class="document-email-submit'))throw new Error(`Document submission section missing: ${rel}`);if(!html.includes('mailto:applications@easttnchihuahuas.com'))throw new Error(`General inbox link missing: ${rel}`)}
+console.log(`Final QA passed: ${htmlFiles.length} HTML pages; 0 broken internal links; homepage photo, funnel, and document inbox checks passed.`);
