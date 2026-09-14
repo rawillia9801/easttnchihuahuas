@@ -1,0 +1,1 @@
+The homepage show photo is stored as a binary asset and applied by homepage-show-photo-pass.mjs.
