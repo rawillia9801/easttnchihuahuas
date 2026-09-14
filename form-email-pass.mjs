@@ -40,6 +40,9 @@ for (const [rel,title] of docs) {
 const applicationFile = pageFile('application');
 if (!fs.existsSync(applicationFile)) throw new Error('Application page is missing');
 let application = fs.readFileSync(applicationFile,'utf8');
+if (!/<input[^>]+type=["']email["']/i.test(application)) {
+  application = application.replace(/(<form[^>]+id=["']puppyApplicationForm["'][^>]*>)/i, `$1\n<section class="form-section application-email-receipt"><h2>Email for confirmation</h2><p>We use this address to send your automatic submission receipt and to follow up about your application.</p><label>Email address<input type="email" name="customerEmail" autocomplete="email" required /></label></section>`);
+}
 application = ensureScript(application);
 fs.writeFileSync(applicationFile, application);
 
@@ -95,8 +98,8 @@ const js = `
       if(!status){status=document.createElement('p');status.className='application-submit-status';status.setAttribute('role','status');status.setAttribute('aria-live','polite');application.appendChild(status);}
       try{
         const fields=collect(application); const emailEl=findEmail(application); const nameEl=findName(application);
-        const customerEmail=String(emailEl?.value||fields.email||fields.Email||'').trim();
-        const customerName=String(nameEl?.value||fields.name||fields.Name||'').trim();
+        const customerEmail=String(emailEl?.value||fields.customerEmail||fields.email||fields.Email||'').trim();
+        const customerName=String(nameEl?.value||fields.customerName||fields.name||fields.Name||'').trim();
         if(!customerEmail) throw new Error('Please enter your email address so we can send your confirmation.');
         if(!customerName) throw new Error('Please enter your name.');
         await post({type:'application',label:'Puppy Application',customerName,customerEmail,fields,pageUrl:location.href});
@@ -113,12 +116,14 @@ const js = `
 `;
 fs.writeFileSync(path.join(root,'assets','form-submit.js'),js);
 
-fs.appendFileSync(path.join(root,'assets','styles.css'), `\n/* Direct form submission */\n.document-submit-form{margin-top:22px}.submission-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}.submission-grid label,.submission-check{display:flex;flex-direction:column;gap:7px;font-weight:800;color:#17324a}.submission-grid label span{font-weight:500;color:#738596;font-size:.8rem}.submission-grid input,.submission-grid textarea{font:inherit;padding:12px;border:1px solid #cad8e2;border-radius:9px;background:#fff;color:#102a40}.submission-wide{grid-column:1/-1}.submission-check{flex-direction:row;align-items:flex-start;margin-top:18px;font-weight:600}.submission-check input{margin-top:4px}.submission-status,.application-submit-status{margin-top:14px;font-weight:700;color:#31556f}@media(max-width:700px){.submission-grid{grid-template-columns:1fr}.submission-wide{grid-column:auto}}@media print{.document-email-submit{display:none!important}}\n`);
+fs.appendFileSync(path.join(root,'assets','styles.css'), `\n/* Direct form submission */\n.document-submit-form{margin-top:22px}.submission-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}.submission-grid label,.submission-check{display:flex;flex-direction:column;gap:7px;font-weight:800;color:#17324a}.submission-grid label span{font-weight:500;color:#738596;font-size:.8rem}.submission-grid input,.submission-grid textarea,.application-email-receipt input{font:inherit;padding:12px;border:1px solid #cad8e2;border-radius:9px;background:#fff;color:#102a40}.submission-wide{grid-column:1/-1}.submission-check{flex-direction:row;align-items:flex-start;margin-top:18px;font-weight:600}.submission-check input{margin-top:4px}.submission-status,.application-submit-status{margin-top:14px;font-weight:700;color:#31556f}@media(max-width:700px){.submission-grid{grid-template-columns:1fr}.submission-wide{grid-column:auto}}@media print{.document-email-submit{display:none!important}}\n`);
 
 for (const [rel] of docs) {
   const html=fs.readFileSync(pageFile(rel),'utf8');
   if(!html.includes('data-form-type="'+rel+'"')) throw new Error(`Direct submission form missing: ${rel}`);
   if(!html.includes('name="customerEmail"')) throw new Error(`Customer email field missing: ${rel}`);
 }
+const applicationCheck=fs.readFileSync(applicationFile,'utf8');
+if(!/<input[^>]+type=["']email["']/i.test(applicationCheck)) throw new Error('Application customer email field is missing');
 if(!fs.existsSync(path.join(root,'assets','form-submit.js'))) throw new Error('Form submission JavaScript is missing');
 console.log(`Direct email submission enabled for application and ${docs.length} document forms.`);
