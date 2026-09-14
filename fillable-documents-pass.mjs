@@ -53,7 +53,7 @@ for(const [rel,title] of docs){
  let html=fs.readFileSync(file(rel),'utf8');
  html=html.replace(/<section class="document-email-submit[\s\S]*?<\/section>/gi,'');
  html=html.replace(/<script src="\/assets\/form-submit\.js" defer><\/script>/gi,'');
- const m=html.match(/<main class="main-content">([\s\S]*?)<\/main>/i);if(!m)throw new Error(`Main missing: ${rel}`);
+ const m=html.match(/<main\b[^>]*>([\s\S]*?)<\/main>/i);if(!m)throw new Error(`Main missing: ${rel}`);
  let body=m[1];const firstEnd=body.indexOf('</section>');if(firstEnd<0)throw new Error(`Header missing: ${rel}`);
  body=body.slice(0,firstEnd+10)+completion(rel)+body.slice(firstEnd+10);
  const form=`<form class="fillable-document-form" data-form-type="${rel}" data-form-label="${title}" novalidate>${body}${signature()}</form>`;
