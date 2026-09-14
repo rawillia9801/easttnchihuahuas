@@ -10,7 +10,7 @@ const healthSection = `
 <section class="health-screening-standard section-space" aria-labelledby="health-screening-title">
   <span class="panel-kicker">HEALTH SCREENING &amp; VETERINARY CARE</span>
   <h2 id="health-screening-title">Health information is part of every breeding and placement decision.</h2>
-  <p>Our breeding dogs receive genetic health screening and veterinarian-performed patellar evaluations as part of our breeding program. Health information is considered alongside temperament, structure, overall condition, and veterinary guidance when making breeding decisions.</p>
+  <p>Our breeding dogs have completed OFA health clearances for patellas, eyes, and hips, with normal results. Genetic health screening is also part of our breeding program. Health information is considered alongside temperament, structure, overall condition, and veterinary guidance when making breeding decisions.</p>
   <p>Before placement, each puppy also receives a veterinary health examination to evaluate overall condition and readiness for transition to their new home. Puppy-specific health records are provided to the buyer at placement.</p>
 </section>`;
 
@@ -31,7 +31,7 @@ for (const rel of ['health-care', 'our-program']) insertAfterPageHeader(rel);
   let html = fs.readFileSync(file, 'utf8');
   const cardPattern = /<article><strong>Health &amp; Care<\/strong><p>[\s\S]*?<\/p><\/article>/i;
   if (!cardPattern.test(html)) throw new Error('Homepage Health & Care card was not found');
-  html = html.replace(cardPattern, '<article><strong>Health &amp; Care</strong><p>Breeding dogs receive genetic health screening and veterinarian-performed patellar evaluations. Before placement, each puppy receives a veterinary health examination, and puppy-specific health records are provided to the buyer.</p></article>');
+  html = html.replace(cardPattern, '<article><strong>Health &amp; Care</strong><p>Our breeding dogs have completed OFA health clearances for patellas, eyes, and hips, with normal results, alongside genetic health screening. Before placement, each puppy receives a veterinary health examination, and puppy-specific health records are provided to the buyer.</p></article>');
   fs.writeFileSync(file, html);
 }
 
@@ -49,7 +49,7 @@ for (const rel of ['health-care', 'our-program']) insertAfterPageHeader(rel);
   let html = read('upcoming-litters');
   const parentPattern = /<article><strong>Sire &amp; Dam<\/strong><p>[\s\S]*?<\/p><\/article>/i;
   if (!parentPattern.test(html)) throw new Error('Upcoming Litters Sire & Dam card was not found');
-  html = html.replace(parentPattern, '<article><strong>Sire &amp; Dam</strong><p>The actual parents involved in the pairing, with available registration, current weight, and documented health information. Our breeding dogs receive genetic health screening and veterinarian-performed patellar evaluations as part of our breeding program.</p></article>');
+  html = html.replace(parentPattern, '<article><strong>Sire &amp; Dam</strong><p>The actual parents involved in the pairing, with available registration, current weight, and documented health information. Our breeding dogs have completed OFA health clearances for patellas, eyes, and hips, with normal results. Genetic health screening is also part of our breeding program.</p></article>');
   write('upcoming-litters', html);
 }
 
@@ -80,7 +80,9 @@ for (const phrase of [
   if (publicOutput.toLowerCase().includes(phrase.toLowerCase())) throw new Error(`Unwanted negative health disclosure remains: ${phrase}`);
 }
 
-if (!/genetic health screening and veterinarian-performed patellar evaluations/i.test(publicOutput)) throw new Error('Breeding-dog health screening statement is missing');
+for (const rel of ['', 'health-care', 'our-program', 'upcoming-litters']) {
+  if (!/completed OFA health clearances for patellas, eyes, and hips, with normal results/i.test(read(rel))) throw new Error(`Completed OFA health clearances are missing from ${rel || 'home'}`);
+}
 if (!/Before placement, each puppy also receives a veterinary health examination/i.test(read('health-care'))) throw new Error('Puppy pre-placement veterinary exam statement is missing from Health & Care');
 
 console.log('Health screening and pre-placement veterinary-care statements applied.');
