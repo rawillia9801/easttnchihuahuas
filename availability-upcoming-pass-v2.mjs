@@ -41,7 +41,7 @@ const upcomingBody = `
 
 <section class="maternal-standard section-space"><span class="panel-kicker">DAM-FIRST BREEDING STANDARD</span><h2>Maternal condition comes before a planned litter.</h2><p>We do not breed a female simply because another heat cycle arrived. Recovery, body condition, overall health, prior pregnancy and delivery history, age, and veterinary guidance all matter. If a dam needs more recovery time or is not in appropriate condition for a planned pairing, the pairing is postponed.</p></section>
 
-<section class="program-standards section-space"><div class="section-heading"><span>WHEN A PAIRING IS ANNOUNCED</span><h2>Here is what we will publish.</h2></div><div class="trust-grid"><article><strong>Sire &amp; Dam</strong><p>The actual parents involved in the pairing, with verified registration details, current weight information, and the documented health information we have on file. We do not describe a dog as OFA-tested, genetically cleared, or certified unless records support that statement.</p></article><article><strong>Timing</strong><p>The breeding window, pregnancy status when known, expected birth window, and an estimated go-home range. Dates remain estimates until the puppies are born and developing normally.</p></article><article><strong>What May Be Possible</strong><p>Coat, color, registration, sex, size range, and other traits may be discussed as possibilities—not guarantees.</p></article><article><strong>Placement Notes</strong><p>Each litter update can identify size and growth observations, appetite and developmental needs, temperament trends, and specialized toy-breed care considerations. Exceptionally small puppies are specifically flagged when closer feeding and hypoglycemia precautions may be needed.</p></article></div></section>
+<section class="program-standards section-space"><div class="section-heading"><span>WHEN A PAIRING IS ANNOUNCED</span><h2>Here is what we will publish.</h2></div><div class="trust-grid"><article><strong>Sire &amp; Dam</strong><p>The actual parents involved in the pairing, with registration details, current weight information, and the documented health information available for each dog. Completed health screening is described accurately, including whether it is veterinarian-performed, DNA-based, or registered through OFA/CAER when applicable. We do not treat a routine wellness examination as a substitute for a breed-specific screening test, and we do not claim a clearance that is not documented.</p></article><article><strong>Timing</strong><p>The breeding window, pregnancy status when known, expected birth window, and an estimated go-home range. Dates remain estimates until the puppies are born and developing normally.</p></article><article><strong>What May Be Possible</strong><p>Coat, color, registration, sex, size range, and other traits may be discussed as possibilities—not guarantees.</p></article><article><strong>Placement Notes</strong><p>Each litter update can identify size and growth observations, appetite and developmental needs, temperament trends, and specialized toy-breed care considerations. Exceptionally small puppies are specifically flagged when closer feeding and hypoglycemia precautions may be needed.</p></article></div></section>
 
 <section class="journey section-space"><div class="section-heading"><span>EARLY CONSIDERATION</span><h2>How future placement works.</h2></div><div class="journey-grid three-step"><a class="journey-link" href="/application/"><b>01</b><strong>Application Review</strong><p>We learn about your household and what you are hoping for.</p><span>START APPLICATION →</span></a><article><b>02</b><strong>Litter Updates</strong><p>When a real pairing or litter is ready to discuss, approved families can be contacted.</p></article><a class="journey-link" href="/policies/"><b>03</b><strong>Individual Match</strong><p>Final placement decisions are based on the actual puppies—their development, temperament, health, and fit for the home.</p><span>REVIEW STANDARDS →</span></a></div></section>
 
@@ -54,7 +54,6 @@ for (const [rel, body] of [['available-puppies', availableBody], ['upcoming-litt
   write(rel, replaceMain(read(rel), body));
 }
 
-// Restore the established reservation deposit terms throughout the public output.
 const htmlFiles = [];
 function walk(dir) {
   for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
@@ -93,7 +92,7 @@ if (!/href="\/application\/"[^>]*>[\s\S]*?01[\s\S]*?Apply/i.test(available)) thr
 if (!/href="\/deposit-agreement\/"[^>]*>[\s\S]*?03[\s\S]*?Reserve/i.test(available)) throw new Error('Available Puppies reserve step is not linked');
 if (!/EVERY COMPANION PLACEMENT INCLUDES/i.test(available)) throw new Error('Placement-includes section missing');
 if (!/DAM-FIRST BREEDING STANDARD/i.test(upcoming)) throw new Error('Maternal safety standard missing');
-if (!/do not describe a dog as OFA-tested/i.test(upcoming)) throw new Error('Health-testing transparency statement missing');
+if (!/routine wellness examination as a substitute for a breed-specific screening test/i.test(upcoming)) throw new Error('Health-testing transparency statement missing');
 if (/50%/.test(allPublicHtml)) throw new Error('Incorrect 50% deposit language remains in public output');
 if (!/\$250(?:\s|&ndash;|–|-|to)+\$500|\$250 to \$500/i.test(allPublicHtml)) throw new Error('Reservation deposit range is missing from public output');
 
@@ -103,4 +102,4 @@ for (const html of [available, upcoming]) {
   }
 }
 
-console.log('Availability, upcoming-litter, footer-link, and deposit consistency pass applied.');
+console.log('Availability, upcoming-litter, footer-link, deposit, and health-testing transparency pass applied.');
