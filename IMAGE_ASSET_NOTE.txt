@@ -1,0 +1,1 @@
+Homepage hero should use assets/home-show-photo.webp, derived from the user-provided photo in this conversation. This note can be removed after the binary asset is committed.
