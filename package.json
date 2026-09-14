@@ -1,0 +1,8 @@
+{
+  "name": "easttnchihuahuas-site",
+  "private": true,
+  "version": "1.0.0",
+  "dependencies": {
+    "nodemailer": "^7.0.6"
+  }
+}

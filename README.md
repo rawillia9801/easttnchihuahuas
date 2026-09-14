@@ -8,34 +8,46 @@ The site is a multi-page breeder website with a Mission Control-inspired shell a
 
 The policy/document area includes the Deposit Agreement, Puppy Sales Agreement & Bill of Sale, One-Year Health Guarantee, Financing & Payment Plan Addendum, Lifetime Return & Rehoming Policy, Transportation Policy, Buyer Responsibilities & Care Agreement, Small Puppy Safety Policy, Breeding Rights Policy, Terms, and Privacy Policy.
 
-`postbuild.mjs` performs the final customer-facing pass after the base site is rebuilt. It keeps the breeder biography/"since 2009" information on the About page, replaces internal/development-style customer copy, uses a real Chihuahua photograph on the home page, builds Pricing and About pages, generates dynamic puppy-listing surfaces, creates the private `/admin/` interface, and performs build-time customer-copy and internal-link validation.
+`postbuild.mjs` performs the final customer-facing pass after the base site is rebuilt. Additional build passes add the breeder photographs, customer form experience, policy/document presentation, and validation.
+
+The homepage uses `assets/Cheralynnn.png`. The second breeder image, `assets/Cherlyn4444.jpg`, is copied into the deployed public assets and displayed on the About page.
 
 ## Website email and automatic replies
 
-Website form delivery is handled by the Vercel Function at `api/submit-form.js`. Form submissions are routed by purpose and a confirmation email is automatically sent back to the visitor.
+Website form delivery is handled by the Vercel Function at `api/submit-form.js`. The site sends directly through the East Tennessee Chihuahuas Hostinger mailboxes using authenticated Hostinger SMTP. There is no Resend dependency.
 
 - `applications@easttnchihuahuas.com` receives puppy applications, application questions, and completed placement documents.
 - `contact@easttnchihuahuas.com` receives general website, puppy-availability, pricing, transportation, and program inquiries.
 - `support@easttnchihuahuas.com` receives existing-buyer questions, puppy-family updates, post-placement support, and website/form help.
 
-`email-routing-pass.mjs` adds the routed contact form to `/contact/`, replaces the former public `hello@easttnchihuahuas.com` address with `contact@easttnchihuahuas.com`, and creates the browser-side submission handler.
+The server-side transport is implemented in `api/_mail.js`. Default Hostinger SMTP settings are `smtp.hostinger.com` on port `465` with a secure connection. The credentials remain server-side and are never sent to browser JavaScript.
 
-Email delivery currently uses the Resend API from the server-side Vercel Function. The sending domain must be verified with the email provider before production mail can be sent from the East Tennessee Chihuahuas addresses.
+Required server-side mail environment variable when the three mailboxes share one password:
 
-Required server-side email environment variable:
+- `HOSTINGER_MAIL_PASSWORD`
 
-- `RESEND_API_KEY`
+Optional per-mailbox credentials:
 
-Optional server-side routing overrides:
+- `APPLICATIONS_MAIL_PASSWORD`
+- `CONTACT_MAIL_PASSWORD`
+- `SUPPORT_MAIL_PASSWORD`
 
+Optional SMTP and routing overrides:
+
+- `SMTP_HOST`
+- `SMTP_PORT`
+- `SMTP_SECURE`
 - `APPLICATIONS_INBOX`
 - `CONTACT_INBOX`
 - `SUPPORT_INBOX`
-- `APPLICATIONS_FROM_EMAIL`
-- `CONTACT_FROM_EMAIL`
-- `SUPPORT_FROM_EMAIL`
 
-These values are server-side only. Do not place API keys or mailbox passwords in public JavaScript or commit them to the repository.
+Do not commit mailbox passwords to the repository.
+
+## Fillable documents
+
+The customer document pages are interactive forms rather than a document preview followed by a separate submission box. Buyer/contact details, puppy details, document-specific information, acknowledgments, and signature fields are entered directly on the document page. The completed fields submit through `/api/submit-form`, are routed to `applications@easttnchihuahuas.com`, and trigger a confirmation email to the buyer.
+
+`fillable-documents-pass.mjs` creates the integrated document form experience and removes the former bottom-of-page document submission form.
 
 ## Puppy admin
 
@@ -53,4 +65,4 @@ The database/storage setup is in `supabase/schema.sql`. The service-role key mus
 
 `build.sh` reconstructs the validated base bundle into `public/`, then runs the customer-facing build passes. `vercel.json` deploys the generated `public/` directory while Vercel Functions under `api/` provide the puppy listing, photo upload, and website form-email APIs.
 
-The build fails if customer-facing QA finds former SWVA branding, internal-placeholder language, `since 2009` outside the About page, or broken internal links.
+The build fails if customer-facing QA finds former SWVA branding, internal-placeholder language, `since 2009` outside the About page, broken internal links, missing breeder images, legacy bottom document forms, or a Resend dependency in the website form handler.

@@ -13,7 +13,7 @@ tar -xzf .site-build/site.tgz -C public
 # Build the working site, admin tools, and dynamic puppy data hooks.
 node postbuild.mjs
 
-# Apply customer-facing design, copy, image, form, contract, policy, funnel, health, homepage-photo, submission, and email-routing passes.
+# Apply customer-facing design, copy, image, form, contract, policy, funnel, health, photo, submission, and email-routing passes.
 node fix-hero.mjs
 node final-pass.mjs
 node contracts-pass.mjs
@@ -23,8 +23,10 @@ node legal-policy-pass.mjs
 node availability-upcoming-pass-v2.mjs
 node health-screening-pass.mjs
 node homepage-show-photo-pass.mjs
+node secondary-photo-pass.mjs
 node document-email-links-pass.mjs
 node form-email-pass.mjs
+node fillable-documents-pass.mjs
 node email-routing-pass.mjs
 node final-qa.mjs
 
