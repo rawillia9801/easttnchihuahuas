@@ -1,10 +1,8 @@
-const APPLICATIONS_INBOX = process.env.APPLICATIONS_INBOX || process.env.FORM_INBOX || 'applications@easttnchihuahuas.com';
+const { sendFromMailbox } = require('./_mail');
+
+const APPLICATIONS_INBOX = process.env.APPLICATIONS_INBOX || 'applications@easttnchihuahuas.com';
 const CONTACT_INBOX = process.env.CONTACT_INBOX || 'contact@easttnchihuahuas.com';
 const SUPPORT_INBOX = process.env.SUPPORT_INBOX || 'support@easttnchihuahuas.com';
-
-const APPLICATIONS_FROM = process.env.APPLICATIONS_FROM_EMAIL || `East Tennessee Chihuahuas <${APPLICATIONS_INBOX}>`;
-const CONTACT_FROM = process.env.CONTACT_FROM_EMAIL || `East Tennessee Chihuahuas <${CONTACT_INBOX}>`;
-const SUPPORT_FROM = process.env.SUPPORT_FROM_EMAIL || `East Tennessee Chihuahuas <${SUPPORT_INBOX}>`;
 
 const LABELS = {
   application: 'Puppy Application',
@@ -48,11 +46,7 @@ function esc(value = '') {
 function normalizeBody(req) {
   if (!req.body) return {};
   if (typeof req.body === 'object') return req.body;
-  try {
-    return JSON.parse(req.body);
-  } catch {
-    return {};
-  }
+  try { return JSON.parse(req.body); } catch { return {}; }
 }
 
 function isEmail(value) {
@@ -61,20 +55,28 @@ function isEmail(value) {
 
 function routeFor(type) {
   if (type === 'contact') {
-    return { inbox: CONTACT_INBOX, from: CONTACT_FROM };
+    return {
+      inbox: CONTACT_INBOX,
+      credential: process.env.CONTACT_MAIL_PASSWORD || process.env.HOSTINGER_MAIL_PASSWORD || ''
+    };
   }
   if (type === 'support') {
-    return { inbox: SUPPORT_INBOX, from: SUPPORT_FROM };
+    return {
+      inbox: SUPPORT_INBOX,
+      credential: process.env.SUPPORT_MAIL_PASSWORD || process.env.HOSTINGER_MAIL_PASSWORD || ''
+    };
   }
   if (APPLICATION_TYPES.has(type)) {
-    return { inbox: APPLICATIONS_INBOX, from: APPLICATIONS_FROM };
+    return {
+      inbox: APPLICATIONS_INBOX,
+      credential: process.env.APPLICATIONS_MAIL_PASSWORD || process.env.HOSTINGER_MAIL_PASSWORD || ''
+    };
   }
   return null;
 }
 
 function confirmationText(type, label, name) {
   const first = String(name || '').trim().split(/\s+/)[0] || 'there';
-
   if (type === 'application') {
     return {
       subject: 'We received your East Tennessee Chihuahuas application',
@@ -82,7 +84,6 @@ function confirmationText(type, label, name) {
       body: `Hi ${first}, we received your puppy application. It has been delivered to our applications inbox for review. We will follow up using the contact information on your application.`
     };
   }
-
   if (type === 'application-inquiry') {
     return {
       subject: 'We received your application question — East Tennessee Chihuahuas',
@@ -90,7 +91,6 @@ function confirmationText(type, label, name) {
       body: `Hi ${first}, your message has been delivered to our applications inbox. We will review your question and follow up with you.`
     };
   }
-
   if (type === 'contact') {
     return {
       subject: 'We received your message — East Tennessee Chihuahuas',
@@ -98,7 +98,6 @@ function confirmationText(type, label, name) {
       body: `Hi ${first}, your message has been delivered to our contact inbox. We will review it and reply as soon as we can.`
     };
   }
-
   if (type === 'support') {
     return {
       subject: 'We received your support request — East Tennessee Chihuahuas',
@@ -106,7 +105,6 @@ function confirmationText(type, label, name) {
       body: `Hi ${first}, your message has been delivered to our support inbox. We will review the details you provided and follow up with you.`
     };
   }
-
   if (type === 'deposit-agreement') {
     return {
       subject: 'We received your Deposit & Reservation Agreement',
@@ -114,46 +112,11 @@ function confirmationText(type, label, name) {
       body: `Hi ${first}, we received your completed Deposit & Reservation Agreement and delivered it to our applications inbox. If your deposit payment is being made separately, we will match the payment to your agreement when it is received.`
     };
   }
-
   return {
     subject: `We received your ${label}`,
     heading: `Thank you for submitting your ${label}.`,
     body: `Hi ${first}, we received your completed ${label} and delivered it to our applications inbox. Please keep this email for your records.`
   };
-}
-
-async function sendEmail(payload) {
-  const key = process.env.RESEND_API_KEY;
-  if (!key) {
-    const error = new Error('Email delivery is not configured yet.');
-    error.statusCode = 503;
-    throw error;
-  }
-
-  const response = await fetch('https://api.resend.com/emails', {
-    method: 'POST',
-    headers: {
-      Authorization: `Bearer ${key}`,
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify(payload)
-  });
-
-  const text = await response.text();
-  let data = null;
-  try {
-    data = text ? JSON.parse(text) : null;
-  } catch {
-    data = text;
-  }
-
-  if (!response.ok) {
-    const error = new Error(data?.message || `Email delivery failed (${response.status}).`);
-    error.statusCode = response.status;
-    throw error;
-  }
-
-  return data;
 }
 
 module.exports = async function handler(req, res) {
@@ -173,31 +136,20 @@ module.exports = async function handler(req, res) {
     const submitted = body.fields && typeof body.fields === 'object' ? body.fields : {};
     const honeypot = String(body.website || submitted.website || '').trim();
 
-    if (honeypot) {
-      return res.status(200).json({ ok: true });
-    }
-
-    if (!label || !route) {
-      return res.status(400).json({ error: 'Unknown form type.' });
-    }
-    if (!customerName) {
-      return res.status(400).json({ error: 'Customer name is required.' });
-    }
-    if (!isEmail(customerEmail)) {
-      return res.status(400).json({ error: 'A valid customer email address is required.' });
-    }
+    if (honeypot) return res.status(200).json({ ok: true });
+    if (!label || !route) return res.status(400).json({ error: 'Unknown form type.' });
+    if (!customerName) return res.status(400).json({ error: 'Customer name is required.' });
+    if (!isEmail(customerEmail)) return res.status(400).json({ error: 'A valid customer email address is required.' });
 
     const entries = Object.entries(submitted)
       .filter(([key, value]) => key !== 'website' && value !== '' && value !== null && value !== undefined)
-      .slice(0, 200);
+      .slice(0, 250);
 
     const rows = entries.length
-      ? entries
-          .map(([key, value]) => {
-            const normalized = Array.isArray(value) ? value.join(', ') : String(value);
-            return `<tr><th style="text-align:left;padding:8px;border-bottom:1px solid #e5e7eb;vertical-align:top">${esc(String(key).slice(0, 160))}</th><td style="padding:8px;border-bottom:1px solid #e5e7eb">${esc(normalized.slice(0, 5000))}</td></tr>`;
-          })
-          .join('')
+      ? entries.map(([key, value]) => {
+          const normalized = Array.isArray(value) ? value.join(', ') : String(value);
+          return `<tr><th style="text-align:left;padding:8px;border-bottom:1px solid #e5e7eb;vertical-align:top;width:35%">${esc(String(key).slice(0, 160))}</th><td style="padding:8px;border-bottom:1px solid #e5e7eb">${esc(normalized.slice(0, 7000))}</td></tr>`;
+        }).join('')
       : '<tr><td style="padding:8px">No additional fields were supplied.</td></tr>';
 
     const receivedAt = new Date().toISOString();
@@ -220,18 +172,20 @@ module.exports = async function handler(req, res) {
         <p style="margin-top:28px">East Tennessee Chihuahuas<br>Johnson City, Tennessee</p>
       </div>`;
 
-    await sendEmail({
-      from: route.from,
-      to: [route.inbox],
-      reply_to: customerEmail,
+    await sendFromMailbox({
+      address: route.inbox,
+      credential: route.credential,
+      to: route.inbox,
+      replyTo: customerEmail,
       subject: adminSubject,
       html: adminHtml
     });
 
-    await sendEmail({
-      from: route.from,
-      to: [customerEmail],
-      reply_to: route.inbox,
+    await sendFromMailbox({
+      address: route.inbox,
+      credential: route.credential,
+      to: customerEmail,
+      replyTo: route.inbox,
       subject: confirmation.subject,
       html: customerHtml
     });
@@ -239,7 +193,8 @@ module.exports = async function handler(req, res) {
     return res.status(200).json({
       ok: true,
       deliveredTo: route.inbox,
-      confirmationSentTo: customerEmail
+      confirmationSentTo: customerEmail,
+      transport: 'hostinger-smtp'
     });
   } catch (error) {
     const status = Number(error?.statusCode) || 500;
