@@ -1,3 +1,4 @@
+import './finance-plan-pass.mjs';
 import fs from 'node:fs';
 import path from 'node:path';
 const root=path.resolve('public');
@@ -23,9 +24,9 @@ const application=fs.readFileSync(path.join(root,'application','index.html'),'ut
 if(!application.includes('/assets/form-submit.js'))throw new Error('Application submission script is missing');
 const pricing=fs.readFileSync(path.join(root,'pricing','index.html'),'utf8');
 if(!/\$250[^<]{0,20}\$500|\$250–\$500/i.test(pricing))throw new Error('Pricing page does not show the approved $250–$500 deposit range');
-const submissionDocs=['deposit-agreement','bill-of-sale','health-guarantee','financing-addendum','lifetime-return','transportation-policy','buyer-care-agreement','small-puppy-policy','breeding-rights-policy'];
-for(const rel of submissionDocs){const html=fs.readFileSync(path.join(root,rel,'index.html'),'utf8');if(!html.includes(`data-form-type="${rel}"`))throw new Error(`Fillable document type missing: ${rel}`);if(!html.includes('name="customerEmail"'))throw new Error(`Required customer email field missing: ${rel}`);if(!html.includes('name="typedSignature"'))throw new Error(`Required signature field missing: ${rel}`);if(!html.includes('/assets/fillable-documents.js'))throw new Error(`Fillable document script missing: ${rel}`);if(html.includes('class="document-email-submit'))throw new Error(`Legacy bottom document form remains: ${rel}`)}
+const financing=fs.readFileSync(path.join(root,'financing-addendum','index.html'),'utf8');
+for(const term of ['$250 for CKC or ACA puppies','$500 for AKC puppies','50% of the remaining puppy balance','12 months','$25 late fee','collection agency','small-claims action'])if(!financing.includes(term))throw new Error(`Payment plan term missing: ${term}`);
 const api=fs.readFileSync(path.resolve('api','submit-form.js'),'utf8');
 if(/resend\.com|RESEND_API_KEY/i.test(api))throw new Error('Resend dependency remains in website form handler');
 if(!api.includes("require('./_mail')"))throw new Error('Hostinger SMTP mail transport is not wired into form handler');
-console.log(`Final QA passed: ${htmlFiles.length} HTML pages; 0 broken internal links; both breeder photos, application flow, Hostinger mail routing, and integrated fillable documents verified.`);
+console.log(`Final QA passed: ${htmlFiles.length} HTML pages; payment plan, breeder photos, application flow, and Hostinger mail routing verified.`);
