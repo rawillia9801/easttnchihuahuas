@@ -1,6 +1,5 @@
 #!/usr/bin/env bash
 set -euo pipefail
-
 rm -rf public .site-build
 mkdir -p public .site-build
 cat sitev2-00 sitev2-01 sitev2-02 sitev2-03 sitev2-04 sitev2-05 sitev2-06-restB > .site-build/site.b64
@@ -24,6 +23,7 @@ node form-email-pass.mjs
 node fillable-documents-pass.mjs
 node email-routing-pass.mjs
 node admin-dashboard-pass.mjs
+node admin-gallery-pass.mjs
 node --check api/puppies.js
 node --check api/litters.js
 node --check api/dogs.js
@@ -33,7 +33,8 @@ test -f public/admin/index.html
 grep -q 'Breeding Dogs' public/admin/index.html
 grep -q '/api/litters' public/assets/admin-dashboard.js
 grep -q '/api/dogs' public/assets/admin-dashboard.js
-# final-qa imports finance-plan-pass after the document layout is complete, then validates the finished output.
+grep -q 'multiple' public/admin/index.html
+grep -q 'image_urls' public/assets/admin-dashboard.js
 node final-qa.mjs
 printf 'East Tennessee Chihuahuas site prepared: '
 find public -type f | wc -l
