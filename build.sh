@@ -22,6 +22,7 @@ node document-email-links-pass.mjs
 node form-email-pass.mjs
 node fillable-documents-pass.mjs
 node email-routing-pass.mjs
+node human-voice-pass.mjs
 node admin-dashboard-pass.mjs
 node admin-gallery-pass.mjs
 node --check api/puppies.js
