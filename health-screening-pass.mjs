@@ -8,30 +8,37 @@ const write = (rel, html) => fs.writeFileSync(pageFile(rel), html);
 
 const healthSection = `
 <section class="health-screening-standard section-space" aria-labelledby="health-screening-title">
-  <span class="panel-kicker">HEALTH SCREENING &amp; VETERINARY CARE</span>
-  <h2 id="health-screening-title">Health information is part of every breeding and placement decision.</h2>
-  <p>Our breeding dogs have completed OFA health clearances for patellas, eyes, and hips, with normal results. Genetic health screening is also part of our breeding program. Health information is considered alongside temperament, structure, overall condition, and veterinary guidance when making breeding decisions.</p>
-  <p>Before placement, each puppy also receives a veterinary health examination to evaluate overall condition and readiness for transition to their new home. Puppy-specific health records are provided to the buyer at placement.</p>
+  <span class="panel-kicker">HEALTH TESTING</span>
+  <h2 id="health-screening-title">Health Testing</h2>
+  <p>The health of our breeding dogs is an important part of every breeding decision we make. Our dogs receive breed-appropriate health screening, with particular attention to the conditions identified as important in Chihuahuas.</p>
+  <p>The Chihuahua Club of America recommends screening breeding Chihuahuas for patellar luxation, cardiac disease, and inherited eye conditions. We maintain health records for our breeding dogs and make applicable testing documentation available to prospective families.</p>
+  <p>Additional genetic and veterinary screening may also be completed based on the individual dog and our veterinarian's recommendations. As OFA-registered results become available, individual health-testing information and verification will be included with each dog's profile.</p>
 </section>`;
 
-function insertAfterPageHeader(rel) {
+function replaceOrInsertHealthSection(rel) {
   let html = read(rel);
-  if (html.includes('HEALTH SCREENING &amp; VETERINARY CARE')) return;
+  const existingSectionPattern = /<section class="health-screening-standard section-space"[\s\S]*?<\/section>/i;
+  if (existingSectionPattern.test(html)) {
+    html = html.replace(existingSectionPattern, healthSection.trim());
+    write(rel, html);
+    return;
+  }
+
   const headerPattern = /(<section class="page-header[^>]*>[\s\S]*?<\/section>)/i;
   if (!headerPattern.test(html)) throw new Error(`Page header not found on ${rel}`);
   html = html.replace(headerPattern, `$1\n${healthSection}`);
   write(rel, html);
 }
 
-for (const rel of ['health-care', 'our-program']) insertAfterPageHeader(rel);
+for (const rel of ['health-care', 'our-program']) replaceOrInsertHealthSection(rel);
 
-// Homepage: summarize the same standard without turning the home page into a policy document.
+// Homepage: summarize the same health-testing approach without overstating registry status.
 {
   const file = path.join(root, 'index.html');
   let html = fs.readFileSync(file, 'utf8');
   const cardPattern = /<article><strong>Health &amp; Care<\/strong><p>[\s\S]*?<\/p><\/article>/i;
   if (!cardPattern.test(html)) throw new Error('Homepage Health & Care card was not found');
-  html = html.replace(cardPattern, '<article><strong>Health &amp; Care</strong><p>Our breeding dogs have completed OFA health clearances for patellas, eyes, and hips, with normal results, alongside genetic health screening. Before placement, each puppy receives a veterinary health examination, and puppy-specific health records are provided to the buyer.</p></article>');
+  html = html.replace(cardPattern, '<article><strong>Health &amp; Care</strong><p>Our breeding dogs receive breed-appropriate health screening, with particular attention to patellar luxation, cardiac disease, and inherited eye conditions. We maintain health records and make applicable testing documentation available to prospective families.</p></article>');
   fs.writeFileSync(file, html);
 }
 
@@ -44,12 +51,12 @@ for (const rel of ['health-care', 'our-program']) insertAfterPageHeader(rel);
   write('available-puppies', html);
 }
 
-// Upcoming Litters: keep the parent-health description positive and factual.
+// Upcoming Litters: keep the parent-health description factual and consistent with the main health section.
 {
   let html = read('upcoming-litters');
   const parentPattern = /<article><strong>Sire &amp; Dam<\/strong><p>[\s\S]*?<\/p><\/article>/i;
   if (!parentPattern.test(html)) throw new Error('Upcoming Litters Sire & Dam card was not found');
-  html = html.replace(parentPattern, '<article><strong>Sire &amp; Dam</strong><p>The actual parents involved in the pairing, with available registration, current weight, and documented health information. Our breeding dogs have completed OFA health clearances for patellas, eyes, and hips, with normal results. Genetic health screening is also part of our breeding program.</p></article>');
+  html = html.replace(parentPattern, '<article><strong>Sire &amp; Dam</strong><p>The actual parents involved in the pairing, with available registration, current weight, and documented health information. Our breeding dogs receive breed-appropriate health screening, and applicable testing documentation is made available to prospective families.</p></article>');
   write('upcoming-litters', html);
 }
 
@@ -72,17 +79,25 @@ walk(root);
 const publicOutput = allHtml.join('\n');
 
 for (const phrase of [
+  'completed OFA health clearances for patellas, eyes, and hips',
+  'OFA health clearances for patellas, eyes, and hips, with normal results',
   'do not describe a dog as OFA-tested',
   'do not claim a clearance that is not documented',
   'we do not perform OFA',
   'we do not have OFA'
 ]) {
-  if (publicOutput.toLowerCase().includes(phrase.toLowerCase())) throw new Error(`Unwanted negative health disclosure remains: ${phrase}`);
+  if (publicOutput.toLowerCase().includes(phrase.toLowerCase())) throw new Error(`Unwanted health-testing language remains: ${phrase}`);
 }
 
-for (const rel of ['', 'health-care', 'our-program', 'upcoming-litters']) {
-  if (!/completed OFA health clearances for patellas, eyes, and hips, with normal results/i.test(read(rel))) throw new Error(`Completed OFA health clearances are missing from ${rel || 'home'}`);
+for (const rel of ['health-care', 'our-program']) {
+  const html = read(rel);
+  if (!/The health of our breeding dogs is an important part of every breeding decision we make\./i.test(html)) throw new Error(`Health Testing introduction is missing from ${rel}`);
+  if (!/patellar luxation, cardiac disease, and inherited eye conditions/i.test(html)) throw new Error(`Breed-appropriate Chihuahua screening language is missing from ${rel}`);
+  if (!/As OFA-registered results become available/i.test(html)) throw new Error(`OFA verification language is missing from ${rel}`);
 }
-if (!/Before placement, each puppy also receives a veterinary health examination/i.test(read('health-care'))) throw new Error('Puppy pre-placement veterinary exam statement is missing from Health & Care');
 
-console.log('Health screening and pre-placement veterinary-care statements applied.');
+if (!/breed-appropriate health screening/i.test(read(''))) throw new Error('Updated health-testing summary is missing from home');
+if (!/applicable testing documentation is made available/i.test(read('upcoming-litters'))) throw new Error('Updated parent health-testing language is missing from Upcoming Litters');
+if (!/Before placement, each puppy receives a veterinary health examination/i.test(read('available-puppies'))) throw new Error('Puppy pre-placement veterinary exam statement is missing from Available Puppies');
+
+console.log('Health Testing language applied consistently.');
