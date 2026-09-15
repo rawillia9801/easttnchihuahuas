@@ -22,6 +22,8 @@ node funnel-polish.mjs
 node legal-policy-pass.mjs
 node availability-upcoming-pass-v2.mjs
 node health-screening-pass.mjs
+node upcoming-waitlist-pass.mjs
+node finance-plan-pass.mjs
 node homepage-show-photo-pass.mjs
 node secondary-photo-pass.mjs
 node document-email-links-pass.mjs
