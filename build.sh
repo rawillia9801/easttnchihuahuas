@@ -29,6 +29,7 @@ node document-email-links-pass.mjs
 node form-email-pass.mjs
 node fillable-documents-pass.mjs
 node email-routing-pass.mjs
+node admin-dashboard-pass.mjs
 # final-qa imports finance-plan-pass after the document layout is complete, then validates the finished output.
 node final-qa.mjs
 
