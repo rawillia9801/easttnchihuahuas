@@ -22,6 +22,11 @@ if(!formSubmit.includes('/api/submit-form'))throw new Error('Application form AP
 if(!formSubmit.includes("type:'application'"))throw new Error('Application direct submission integration is missing');
 const application=fs.readFileSync(path.join(root,'application','index.html'),'utf8');
 if(!application.includes('/assets/form-submit.js'))throw new Error('Application submission script is missing');
+const upcoming=fs.readFileSync(path.join(root,'upcoming-litters','index.html'),'utf8');
+for(const term of ['There are no puppies available at this time.','Check back in late November or early December.','JOIN OUR WAITLIST','data-waitlist-form'])if(!upcoming.includes(term))throw new Error(`Upcoming litter/waitlist term missing: ${term}`);
+if(/Here is what we will publish/i.test(upcoming))throw new Error('Old AI-like upcoming litter placeholder copy remains');
+const waitlistJs=fs.readFileSync(path.join(root,'assets','waitlist.js'),'utf8');
+if(!waitlistJs.includes("type:'waitlist'"))throw new Error('Waitlist submission integration is missing');
 const pricing=fs.readFileSync(path.join(root,'pricing','index.html'),'utf8');
 if(!/\$250[^<]{0,20}\$500|\$250–\$500/i.test(pricing))throw new Error('Pricing page does not show the approved $250–$500 deposit range');
 const financing=fs.readFileSync(path.join(root,'financing-addendum','index.html'),'utf8');
@@ -29,4 +34,5 @@ for(const term of ['$250 for CKC or ACA puppies','$500 for AKC puppies','50% of 
 const api=fs.readFileSync(path.resolve('api','submit-form.js'),'utf8');
 if(/resend\.com|RESEND_API_KEY/i.test(api))throw new Error('Resend dependency remains in website form handler');
 if(!api.includes("require('./_mail')"))throw new Error('Hostinger SMTP mail transport is not wired into form handler');
-console.log(`Final QA passed: ${htmlFiles.length} HTML pages; payment plan, breeder photos, application flow, and Hostinger mail routing verified.`);
+if(!api.includes("waitlist: 'Future Puppy Waitlist'"))throw new Error('Waitlist is not routed through the form API');
+console.log(`Final QA passed: ${htmlFiles.length} HTML pages; upcoming waitlist, payment plan, breeder photos, application flow, and Hostinger mail routing verified.`);
